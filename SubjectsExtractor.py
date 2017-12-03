@@ -1,5 +1,40 @@
 import nltk
+import pickle
 from nltk.chunk import conlltags2tree, tree2conlltags
+
+BLACK_LIST = {
+    "EU",
+    "OS",
+    "POR",
+    "UMA",
+    "ACHO",
+    "CADA",
+    "UM",
+    "EM",
+    "PARA",
+    "PORTANTO",
+    "SERIA",
+    "NA",
+    "NORMALMENTE",
+    "DE",
+    "SEM",
+    "CIDADE",
+    "ESTÁDIO",
+    "ESTADO",
+    "FOI",
+    "QUEM",
+    "ELE",
+    "ESSE",
+    "DEPOIS",
+    "MAIS",
+    "NOS",
+    "NUMA",
+    "TODOS",
+    "FORA",
+    "ENTRE",
+    "NUM",
+    "HOJE"
+}
 
 
 class SubjectsExtractor(object):
@@ -7,6 +42,7 @@ class SubjectsExtractor(object):
     def __init__(self, text, language="portuguese"):
         self.language = language
         self.text = text
+        self.tagger = pickle.load(open("tagger.pkl", "rb"))
 
     def get_named_entities(self, entity_type="GPE"):
         tags = self.get_text_tagged()
@@ -16,8 +52,16 @@ class SubjectsExtractor(object):
         iob_tagged = tree2conlltags(ne_tree)
         ne_tree = conlltags2tree(iob_tagged)
 
-        return [" ".join(map(lambda x: x[0], node.leaves())) for node in ne_tree
-                if type(node) == nltk.tree.Tree and node.label() == entity_type]
+        result = set()
+        for node in ne_tree:
+            if type(node) == nltk.tree.Tree and node.label() == entity_type:
+                leaves = list(map(lambda x: x[0], node.leaves()))
+                nouns_leaves = map(lambda x: x[0], filter(lambda x: x[1] == 'NOUN', self.tagger.tag(leaves)))
+                graph_node = " ".join(nouns_leaves).upper()
+                if graph_node not in BLACK_LIST and graph_node != '':
+                    result.add(graph_node)
+
+        return result
 
     def get_text_tagged(self):
         tokens = nltk.word_tokenize(self.text, language=self.language)
