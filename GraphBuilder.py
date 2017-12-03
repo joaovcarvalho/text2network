@@ -10,7 +10,8 @@ class GraphBuilder(object):
         self.preprocessing = preprocessing
 
     def build(self, iterable):
-        pool = multiprocessing.Pool()
+        multiprocessing.freeze_support()
+        pool = multiprocessing.Pool(8)
         subgraphs = pool.map(self.process_element, iterable)
 
         for subgraph in subgraphs:
