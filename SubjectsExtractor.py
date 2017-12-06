@@ -1,6 +1,7 @@
 import nltk
 import pickle
 from nltk.chunk import conlltags2tree, tree2conlltags
+from unicodedata import normalize
 
 BLACK_LIST = {
     "EU",
@@ -42,30 +43,38 @@ class SubjectsExtractor(object):
     def __init__(self, text, language="portuguese"):
         self.language = language
         self.text = text
-        self.tagger = pickle.load(open("tagger.pkl", "rb"))
+        self.portuguese_tagger = pickle.load(open("tagger.pkl", "rb"))
+        self.tagger = nltk.pos_tag
 
-    def get_named_entities(self, entity_type="GPE"):
-        tags = self.get_text_tagged()
-
+    def _get_name_entities(self, tags):
         ne_tree = nltk.ne_chunk(tags)
-
         iob_tagged = tree2conlltags(ne_tree)
         ne_tree = conlltags2tree(iob_tagged)
+        return ne_tree
+
+    def get_named_entities(self, entity_type="PERSON"):
+        tags = self.get_text_tagged()
+        ne_tree = self._get_name_entities(tags)
 
         result = set()
         for node in ne_tree:
             if type(node) == nltk.tree.Tree and node.label() == entity_type:
                 leaves = list(map(lambda x: x[0], node.leaves()))
-                nouns_leaves = map(lambda x: x[0], filter(lambda x: x[1] == 'NOUN', self.tagger.tag(leaves)))
-                graph_node = " ".join(nouns_leaves).upper()
+
+                # Portuguese checking
+                leaves = map(lambda x: x[0], filter(lambda x: x[1] == 'NOUN', self.portuguese_tagger.tag(leaves)))
+
+                graph_node = " ".join(leaves).upper()
                 if graph_node not in BLACK_LIST and graph_node != '':
+                    # replace accentuations
+                    graph_node = normalize('NFKD', graph_node).encode('ASCII', 'ignore').decode('ASCII')
                     result.add(graph_node)
 
         return result
 
     def get_text_tagged(self):
         tokens = nltk.word_tokenize(self.text, language=self.language)
-        tags = nltk.pos_tag(tokens)
+        tags = self.tagger(tokens)
         return tags
 
     def get_elements_from_allowed_list(self, allowed_list, tag_type="NN"):

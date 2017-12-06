@@ -1,10 +1,11 @@
 from pymongo import MongoClient
 from pymongo.cursor import Cursor
 from GraphBuilder import GraphBuilder
-from SubjectsExtractor import SubjectsExtractor
+from DbpediaSubjectsExtractor import DbpediaSubjectsExtractor
+import sys
 
 DATABASE_NAME = 'socialnetworks'
-COLLECTION_NAME = 'estadao'
+COLLECTION_NAME = sys.argv[1]
 
 
 def preprocessing(x):
@@ -19,6 +20,6 @@ if __name__ == "__main__":
     documents_collection = database[COLLECTION_NAME]
     cursor = Cursor(documents_collection, no_cursor_timeout=True)
 
-    graph_builder = GraphBuilder(SubjectsExtractor, preprocessing=preprocessing)
+    graph_builder = GraphBuilder(DbpediaSubjectsExtractor, preprocessing=preprocessing)
     graph_builder.build(cursor)
     graph_builder.save_graph(COLLECTION_NAME + ".gml")
