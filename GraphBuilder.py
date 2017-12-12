@@ -1,5 +1,9 @@
 import networkx as nx
 import multiprocessing
+import itertools
+
+WEIGHT_KEY_IN_DICT = 'weight'
+COMBINATIONS_OF = 2
 
 
 class GraphBuilder(object):
@@ -29,10 +33,10 @@ class GraphBuilder(object):
 
                 self.graph.add_edge(first_subject, second_subject)
 
-                if 'weight' in self.graph[first_subject][second_subject]:
-                    self.graph[first_subject][second_subject]['weight'] += 1
-                else:
-                    self.graph[first_subject][second_subject]['weight'] = 1
+                if WEIGHT_KEY_IN_DICT not in self.graph[first_subject][second_subject]:
+                    self.graph[first_subject][second_subject][WEIGHT_KEY_IN_DICT] = 1
+
+                self.graph[first_subject][second_subject][WEIGHT_KEY_IN_DICT] += 1
 
     def save_graph(self, path):
         nx.write_gml(self.graph, path)
@@ -53,14 +57,10 @@ class GraphBuilder(object):
         edges = set()
         nodes = set()
 
-        for first_subject in subjects_found:
-            nodes.add(first_subject)
+        for node in subjects_found:
+            nodes.add(node)
 
-            for second_subject in subjects_found:
-                nodes.add(second_subject)
-
-                if first_subject != second_subject:
-                    if (second_subject, first_subject) not in edges:
-                        edges.add((first_subject, second_subject))
+        for edge in itertools.combinations(subjects_found, COMBINATIONS_OF):
+            edges.add(edge)
 
         return nodes, edges
