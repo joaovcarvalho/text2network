@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from pymongo.cursor import Cursor
-from GraphBuilder import GraphBuilder
-from SubjectsExtractor import SubjectsExtractor
+from graph_builder import GraphBuilder
+from subjects_extractor import SubjectsExtractor
 
 DATABASE_NAME = 'socialnetworks'
 COLLECTION_NAME = 'estadao'
