@@ -38,6 +38,18 @@ class GraphBuilder(object):
 
                 self.graph[first_subject][second_subject][WEIGHT_KEY_IN_DICT] += 1
 
+        self.remove_nodes_with_degree(0)
+        print("Number of nodes: ", self.graph.number_of_nodes())
+        print("Number of edges: ", self.graph.number_of_edges())
+
+    def remove_nodes_with_degree(self, degree):
+        nodes_to_be_removed = []
+        for i in self.graph.nodes:
+            if nx.degree(self.graph, i) == degree:
+                nodes_to_be_removed += [i]
+
+        self.graph.remove_nodes_from(nodes_to_be_removed)
+
     def save_graph(self, path):
         nx.write_gml(self.graph, path)
 
