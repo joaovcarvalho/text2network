@@ -1,13 +1,8 @@
-import nltk
-import pickle
-from nltk.chunk import conlltags2tree, tree2conlltags
 from unicodedata import normalize
-import pprint
 import spotlight
-from functools  import *
+from functools import *
 import requests
 
-pp = pprint.PrettyPrinter()
 
 class DbpediaSubjectsExtractor(object):
     def __init__(self, text, language="portuguese"):
